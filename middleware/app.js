@@ -20,7 +20,33 @@ app.post("/signup", async (req, res) => {
     console.error("Error saving user:", err);
    }
 });
+app.get("/user",async (req,res) =>{
+  const userEmail = req.body.emailId;
+  try{
+    const user = await User.find ({ emailId : userEmail})
+    if(user.length ===0){
+      res.status(404).send("User not found");
 
+    }else{
+      res.send(user);
+    }
+  }catch (err){
+    res.status(400).send("Something went wrong")
+  }
+});
+ 
+// get all users
+
+app.get("/feed", async (req, res) => {
+  try{
+    const user = await User.find({});
+      res.send(user);
+    
+  }
+  catch (err){
+    res.send (400).send("Something went wrong")
+  }
+})
 connectDB()
   .then(() => {
     console.log("MongoDB connected successfully");
