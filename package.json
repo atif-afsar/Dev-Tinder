@@ -1,15 +1,16 @@
 {
   "name": "devtinder",
   "version": "1.0.0",
-  "main": "app.js",
+  "main": "src/middleware/app.js",
   "scripts": {
-    "start": "node middleware/app.js",
-    "dev": "nodemon middleware/app.js"
+    "start": "node /src/middleware/app.js",
+    "dev": "nodemon src/middleware/app.js"
   },
   "author": "atif afsar",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "express": "^5.1.0",
     "mongoose": "^8.16.1",
     "validator": "^13.15.15"
