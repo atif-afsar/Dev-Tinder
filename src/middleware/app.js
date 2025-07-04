@@ -2,16 +2,23 @@ const express = require("express");
 const { connectDB } = require("../config/database");
 const bcrypt = require("bcrypt");
 const User = require("../models/user"); // ✅ Declare FIRST
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
+
 const { validateSignUpData } = require("../utils/validate");
 const app = express();
 
 app.use(express.json()); //middleware given by express to parse JSON bodies
+app.use(cookieParser()); // Middleware to parse cookies
+
 
 app.post("/signup", async (req, res) => {
   try{
     console.log("Request body:", req.body);
 
     validateSignUpData(req);
+    console.log("Password before hashing:", password);
+
 
     const { firstName, lastName, emailId, password } = req.body;
 
@@ -30,79 +37,105 @@ app.post("/signup", async (req, res) => {
     res.status(400).send("ERROR: " + err.message);
   }
 });
-// app.get("/user",async (req,res) =>{
-//   const userEmail = req.body.emailId;
-//   try{
-//     const user = await User.find ({ emailId : userEmail})
-//     if(user.length ===0){
-//       res.status(404).send("User not found");
+//  login route
+app.post("/login", async (req,res) =>{
+  try{
+    const {emailId, password} = req.body;
 
-//     }else{
-//       res.send(user);
-//     }
-//   }catch (err){
-//     res.status(400).send("Something went wrong")
-//   }
-// });
- 
-// // get all users
-
-// app.get("/feed", async (req, res) => {
-//   try{
-//     const user = await User.find({});
-//       res.send(user);
+    const user = await User.findOne({ emailId: emailId});
+    if(!user){
+      throw new Error("Invalid Credentials");
+    }
+    const isPasswordValid = await bcrypt.compare(password, user.password);
     
-//   }
-//   catch (err){
-//     res.send (400).send("Something went wrong")
-//   }
-// })
 
-// // deleting by id 
-// app.delete("/delete", async (req, res) => {
-//   const userId = req.body.userId;
+    if(isPasswordValid){
 
-//   try {
-//     const user = await User.findByIdAndDelete(userId);
+      const token = await jwt.sign({ _id: user._id}, "DEV@TINDER$790");
+      res.cookie("token", token);
+      res.send("Login successful");
+      
+     res.send("Login successful");;
+    }else{
+      throw new Error("Invalid Credentials");
+    }
+  }catch(err){
+    res.status(400).send("ERROR: " + err.message);
+  }
+})
+ app.get("/user",async (req,res) =>{
+  const userEmail = req.body.emailId;
+  try{
+    const user = await User.find ({ emailId : userEmail})
+    if(user.length ===0){
+      res.status(404).send("User not found");
 
-//     if (!user) {
-//       return res.status(404).send("User not found");
-//     }
+    }else{
+      res.send(user);
+    }
+  }catch (err){
+    res.status(400).send("Something went wrong")
+  }
+});
+ 
+// get all users
 
-//     res.send("User deleted successfully");
-//   } catch (err) {
-//     console.error(err);
-//     res.status(400).send("Something went wrong");
-//   }
-// });
+app.get("/feed", async (req, res) => {
+  try{
+    const user = await User.find({});
+      res.send(user);
+    
+  }
+  catch (err){
+    res.send (400).send("Something went wrong")
+  }
+})
 
-// app.patch("/update/:emailId", async (req, res) => {
-//   const emailId = req.params?.emailId;
-//   const data = req.body;
+// deleting by id 
+app.delete("/delete", async (req, res) => {
+  const userId = req.body.userId;
 
-//   const ALLOWED_UPDATES = ["firstName", "lastName", "emailId", "password"];
-//   const isUpdateAllowed = Object.keys(data).every((key) => ALLOWED_UPDATES.includes(key));
+  try {
+    const user = await User.findByIdAndDelete(userId);
 
-//   if (!isUpdateAllowed) {
-//     return res.status(400).json({ error: "Invalid update request" });
-//   }
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
 
-//   try {
-//     const user = await User.findOneAndUpdate(
-//       { emailId: emailId },
-//       { $set: data },
-//       { new: true, runValidators: true }
-//     );
+    res.send("User deleted successfully");
+  } catch (err) {
+    console.error(err);
+    res.status(400).send("Something went wrong");
+  }
+});
 
-//     if (!user) {
-//       return res.status(404).json({ error: "User not found" });
-//     }
+app.patch("/update/:emailId", async (req, res) => {
+  const emailId = req.params?.emailId;
+  const data = req.body;
 
-//     res.status(200).json({ message: "User updated successfully", user });
-//   } catch (error) {
-//     res.status(500).json({ error: "Server error", details: error.message });
-//   }
-// });
+  const ALLOWED_UPDATES = ["firstName", "lastName", "emailId", "password"];
+  const isUpdateAllowed = Object.keys(data).every((key) => ALLOWED_UPDATES.includes(key));
+
+  if (!isUpdateAllowed) {
+    return res.status(400).json({ error: "Invalid update request" });
+  }
+
+  try {
+    const user = await User.findOneAndUpdate(
+      { emailId: emailId },
+      { $set: data },
+      { new: true, runValidators: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({ message: "User updated successfully", user });
+  } catch (error) {
+    res.status(500).json({ error: "Server error", details: error.message });
+  }
+});
 
 
 connectDB()
