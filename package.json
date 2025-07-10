@@ -1,10 +1,10 @@
 {
   "name": "devtinder",
   "version": "1.0.0",
-  "main": "src/middleware/app.js",
+  "main": "src/app.js",
   "scripts": {
-    "start": "node /src/middleware/app.js",
-    "dev": "nodemon src/middleware/app.js"
+    "start": "node /src/app.js",
+    "dev": "nodemon /src/app.js"
   },
   "author": "atif afsar",
   "license": "ISC",
