@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const { connectDB } = require("./config/database");
 const cookieParser = require("cookie-parser");
@@ -11,7 +12,9 @@ const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/requests");
 
-
+app.use("/auth", authRouter);
+app.use("/profile", profileRouter);
+app.use("/requests", requestRouter);
 connectDB()
   .then(() => {
     console.log("MongoDB connected successfully");
