@@ -1,22 +1,15 @@
 const express = require("express");
 const { connectDB } = require("./config/database");
-const bcrypt = require("bcrypt");
-const User = require("./models/user"); // ✅ Declare FIRST
-const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 
-const { validateSignUpData } = require("./utils/validate");
 const app = express();
 
-app.use(express.json()); //middleware given by express to parse JSON bodies
-app.use(cookieParser()); // Middleware to parse cookies
+app.use(express.json()); 
+app.use(cookieParser());
 
-
-const authRouter = require("../routes/auth");
-const profileRouter = require("../routes/profile");
-const requestRouter = require("../routes/requests");
-
-app.use("/", authRouter);
+const authRouter = require("./routes/auth");
+const profileRouter = require("./routes/profile");
+const requestRouter = require("./routes/requests");
 
 
 connectDB()

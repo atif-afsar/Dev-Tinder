@@ -1,35 +1,44 @@
 const express = require("express");
-const { validateSignUpData } = require("../src/utils/validate");
-const authRouter = express.Router();
+const { validateSignUpData } = require("../utils/validate");
 const bcrypt = require("bcrypt");
-const User = require("../src/models/user"); // ✅ Declare FIRST
+const User = require("../models/user"); // ✅ Declare FIRST
 const jwt = require("jsonwebtoken");
+
+
+const authRouter = express.Router();
+
+
 authRouter.post("/signup", async (req, res) => {
-  try{
-    console.log("Request body:", req.body);
-
-    validateSignUpData(req);
-    console.log("Password before hashing:", password);
-
-
+  try {
+    // Destructure FIRST before using any variables
     const { firstName, lastName, emailId, password } = req.body;
 
-    const passwordHash = await bcrypt.hash(password, 10);
-    console.log(passwordHash);
+    // Now you can log it
+    console.log("Request body:", req.body);
+    console.log("Password before hashing:", password);
 
+    // Validate request
+    validateSignUpData(req);
+
+    // Hash password
+    const passwordHash = await bcrypt.hash(password, 10);
+    console.log(passwordHash)
+
+    // Create user
     const user = new User({
       firstName,
       lastName,
       emailId,
       password: passwordHash,
     });
+
     await user.save();
     res.send("User created successfully");
-  }catch(err){
+  } catch (err) {
     res.status(400).send("ERROR: " + err.message);
   }
-});
-
+}); 
+ 
 authRouter.post("/login", async (req,res) =>{
   try{
     const {emailId, password} = req.body;
@@ -42,12 +51,10 @@ authRouter.post("/login", async (req,res) =>{
     
 
     if(isPasswordValid){
-
+      // Create a Jwt Token 
       const token = await jwt.sign({ _id: user._id}, "DEV@TINDER$790");
       res.cookie("token", token);
       res.send("Login successful");
-      
-     res.send("Login successful");;
     }else{
       throw new Error("Invalid Credentials");
     }
@@ -58,3 +65,5 @@ authRouter.post("/login", async (req,res) =>{
 
 
 module.exports = authRouter;
+
+   
