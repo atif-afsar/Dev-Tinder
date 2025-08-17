@@ -74,5 +74,12 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+userSchema.index({ firstName: 1, lastName: 1 }); // Compound indexes
 
-module.exports = mongoose.model("User", userSchema); 
+userSchema.methods.getJWT= async function () {
+  const user = this;
+  const token = await jwt.sign({ _id: this._id }, process.env.JWT_SECRET);
+  return token;
+};
+
+module.exports = mongoose.model("User", userSchema);  
