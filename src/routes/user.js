@@ -55,8 +55,14 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
 
 userRouter.get("/feed", userAuth, async (req,res) =>{
   try{
-    const loggedInUser = req.user;
+    const loggedInUser = req.user;   // user who is logged in (from userAuth middleware)
 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    limit = limit > 50 ? 50 : limit;  // max limit is 50
+    const skip = (page - 1) * limit;
+
+   // 1. Find all connection requests where the loggedInUser is either sender or receiver
     const connectionRequests = await connectionRequest.find({
       $or: [
         { fromUserId: loggedInUser._id },
@@ -64,17 +70,24 @@ userRouter.get("/feed", userAuth, async (req,res) =>{
       ]
     }).select("fromUserId toUserId ");
 
+
+  // 2. Prepare a set of users to HIDE from the feed
     const hideUserFromFeed = new Set();
     connectionRequests.forEach((request) => {
       hideUserFromFeed.add(request.fromUserId);
       hideUserFromFeed.add(request.toUserId);
     });
+
+    // 3. Get all users who are NOT in hideUserFromFeed and not the loggedInUser
     const users = await User.find({
       $and: [
-        { _id: { $nin: Array.from(hideUserFromFeed) } },
-        { _id: { $ne: loggedInUser._id } }
+        { _id: { $nin: Array.from(hideUserFromFeed) } },  //   not in requests
+        { _id: { $ne: loggedInUser._id } }   // not himself
       ]
-    }).select(USER_SAVE_DATA);
+    }).select(USER_SAVE_DATA)
+      .skip(skip)
+      .limit(limit);
+
       res.send(users);
   } catch (err) {
     res.status(400).send("ERROR: " + err.message);
