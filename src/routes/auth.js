@@ -54,7 +54,7 @@ authRouter.post("/login", async (req,res) =>{
       // Create a Jwt Token 
       const token = await jwt.sign({ _id: user._id}, "DEV@TINDER$790");
       res.cookie("token", token);
-      res.send("Login successful");
+      res.send(user);
     }else{
       throw new Error("Invalid Credentials");
     }
