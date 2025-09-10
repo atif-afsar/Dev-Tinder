@@ -4,6 +4,8 @@ const connectionRequest = require("../models/connectionRequest");
 const userRouter = express.Router();
 const User = require("../models/user");
 
+const USER_SAFE_DATA = "firstName lastName photoUrl age gender about skills";
+
 
 userRouter.get("/user/request/received", userAuth, async (req, res) => {
     try {
@@ -59,7 +61,7 @@ userRouter.get("/feed", userAuth, async (req,res) =>{
 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    limit = limit > 50 ? 50 : limit;  // max limit is 50
+    // limit = limit > 50 ? 50 : limit;  // max limit is 50
     const skip = (page - 1) * limit;
 
    // 1. Find all connection requests where the loggedInUser is either sender or receiver
@@ -84,7 +86,7 @@ userRouter.get("/feed", userAuth, async (req,res) =>{
         { _id: { $nin: Array.from(hideUserFromFeed) } },  //   not in requests
         { _id: { $ne: loggedInUser._id } }   // not himself
       ]
-    }).select(USER_SAVE_DATA)
+    }).select(USER_SAFE_DATA)
       .skip(skip)
       .limit(limit);
 
