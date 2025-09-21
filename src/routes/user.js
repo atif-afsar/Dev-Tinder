@@ -35,7 +35,7 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
         { fromUserId: loggedInUser._id, status: "accepted" },
         { toUserId: loggedInUser._id, status: "accepted" }
       ]
-    }).populate("fromUserId", USER_SAVE_DATA).populate("toUserId", USER_SAVE_DATA);
+    }).populate("fromUserId", USER_SAFE_DATA).populate("toUserId", USER_SAFE_DATA);
 
 
 
